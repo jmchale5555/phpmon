@@ -15,7 +15,14 @@ Run these from the project root:
 - `make composer-update` - run `composer update` in dev container (writes to host via bind mount)
 - `make migrate` - run PHP migrations in dev container
 - `make seed` - run PHP seeders in dev container
+- `make db-status` - print migration/seeder/user table status from dev DB
+- `make db-reset` - drop/recreate dev database, then run migrations + seeders
 - `make prune-all` - run `docker system prune -a --volumes` (destructive)
+
+## SELinux note (Fedora/RHEL-like hosts)
+
+- The dev bind mount uses `:z` in `docker-compose.dev.yml` so SELinux labels are shared safely across the long-running web container and one-off `docker compose run` commands.
+- If you hit 403 errors like "search permissions are missing on a component of the path", verify parent path execute bits (for example `/home/<user>` should be at least `711`) and restart the dev stack with `make down-dev && make up-dev`.
 
 ## Composer
 
@@ -30,4 +37,6 @@ Run these from the project root:
 - Seeders are in `database/seeders/`.
 - Run `make migrate` to apply pending migrations.
 - Run `make seed` to apply pending seeders.
+- Run `make db-status` to check whether migration/seeder tables and users table are present.
+- Run `make db-reset` to rebuild the dev database from scratch.
 - Initial seeder creates `admin@example.com` with password `password` (change after first login in real projects).

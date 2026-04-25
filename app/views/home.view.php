@@ -13,7 +13,14 @@
 
     <?php if (empty($_SESSION['USER'])): ?>
         <p>
-            <a href="<?= ROOT ?>/login" role="button">Go to login</a>
+            <a href="<?= ROOT ?>/login"
+                role="button"
+                hx-get="<?= ROOT ?>/login"
+                hx-target="#page-content"
+                hx-select="#page-content > *"
+                hx-select-oob="#site-nav"
+                hx-swap="innerHTML"
+                hx-push-url="true">Go to login</a>
         </p>
     <?php endif; ?>
 

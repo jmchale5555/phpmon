@@ -1,4 +1,4 @@
-.PHONY: help up up-build down up-dev up-dev-build down-dev composer-install composer-update migrate seed prune-all
+.PHONY: help up up-build down up-dev up-dev-build down-dev composer-install composer-update migrate seed db-status db-reset prune-all
 
 COMPOSE_BASE = docker compose
 COMPOSE_DEV = docker compose -f docker-compose.yml -f docker-compose.dev.yml
@@ -15,6 +15,8 @@ help:
 	@printf "  make composer-update  - run composer update in dev container\n"
 	@printf "  make migrate       - run PHP migrations in dev container\n"
 	@printf "  make seed          - run PHP seeders in dev container\n"
+	@printf "  make db-status     - print DB migration/seeder/user status\n"
+	@printf "  make db-reset      - drop/recreate DB, then migrate + seed (dev)\n"
 	@printf "  make prune-all     - docker system prune -a --volumes (destructive)\n"
 
 up:
@@ -46,6 +48,14 @@ migrate:
 
 seed:
 	$(COMPOSE_DEV) run --rm --no-deps --user "$$(id -u):$$(id -g)" web php scripts/seed.php
+
+db-status:
+	$(COMPOSE_DEV) run --rm --no-deps --user "$$(id -u):$$(id -g)" web php scripts/db-status.php
+
+db-reset:
+	$(COMPOSE_DEV) exec db mariadb -uroot -p"$${DB_ROOT_PASS:-root}" -e "DROP DATABASE IF EXISTS \`$${DB_NAME:-phpmon}\`; CREATE DATABASE \`$${DB_NAME:-phpmon}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL PRIVILEGES ON \`$${DB_NAME:-phpmon}\`.* TO '$${DB_USER:-phpmon}'@'%'; FLUSH PRIVILEGES;"
+	$(MAKE) migrate
+	$(MAKE) seed
 
 prune-all:
 	docker system prune -a --volumes

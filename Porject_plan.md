@@ -45,7 +45,7 @@ Refactor this repo into a clean PHP MVC monolith that keeps the simple MVC/OOP f
 2. Create seeders in PHP:
    - `database/seeders/` with deterministic seed classes/files.
    - CLI runner script (for example `php scripts/seed.php`).
-3. Start from minimal schema needed by this app (users, rooms, desks, bookings as needed), reusing only useful concepts from `support.sql`.
+3. Start from minimal schema needed by this app (users/auth first), reusing only useful concepts from `support.sql` only if required.
 4. Make migration/seeder commands idempotent and safe to rerun.
 
 ## Phase 5 - Cleanup and Verification
