@@ -10,6 +10,7 @@ class _404
 
     public function index()
     {
-        $this->view('_404');
+        http_response_code(404);
+        $this->view('404');
     }
 }

@@ -13,6 +13,8 @@ Run these from the project root:
 - `make down-dev` - stop dev stack
 - `make composer-install` - run `composer install` in dev container (writes to host via bind mount)
 - `make composer-update` - run `composer update` in dev container (writes to host via bind mount)
+- `make migrate` - run PHP migrations in dev container
+- `make seed` - run PHP seeders in dev container
 - `make prune-all` - run `docker system prune -a --volumes` (destructive)
 
 ## Composer
@@ -21,3 +23,11 @@ Run these from the project root:
 - `composer.json` keeps direct dependencies only; packages under `vendor/symfony`, `vendor/psr`, etc. are transitive dependencies of direct packages (for example `nesbot/carbon`).
 - The web image runs `composer install` during build so image-copy mode is self-contained.
 - In dev bind-mount mode, run `make composer-install` after dependency changes so `vendor/` is present on your host-mounted project.
+
+## Database migrations and seeders
+
+- Migrations are in `database/migrations/`.
+- Seeders are in `database/seeders/`.
+- Run `make migrate` to apply pending migrations.
+- Run `make seed` to apply pending seeders.
+- Initial seeder creates `admin@example.com` with password `password` (change after first login in real projects).

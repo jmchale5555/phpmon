@@ -8,7 +8,7 @@ use Core\Request;
 defined('ROOTPATH') or exit('Access Denied');
 
 /**
- * Room class
+ * Signup controller
  */
 class Signup
 {

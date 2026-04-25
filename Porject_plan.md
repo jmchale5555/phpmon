@@ -49,10 +49,11 @@ Refactor this repo into a clean PHP MVC monolith that keeps the simple MVC/OOP f
 4. Make migration/seeder commands idempotent and safe to rerun.
 
 ## Phase 5 - Cleanup and Verification
-1. Verify app boots in Docker and routes resolve (`/home`, `/login`, `/book`, `/admin`).
-2. Verify DB connectivity through env-driven config.
-3. Verify no references remain to build artifacts or Node tooling.
-4. Document run/setup commands in `README.md`.
+1. Verify app boots in Docker and template routes resolve (`/home`, `/login`, `/signup`, `/logout`).
+2. Verify removed feature routes return 404 (`/book`, `/admin`).
+3. Verify DB connectivity through env-driven config.
+4. Verify no references remain to build artifacts or Node tooling.
+5. Document run/setup commands in `README.md`.
 
 ## Deliverables
 - `docker-compose.yml` + web Dockerfile + Apache/PHP config.

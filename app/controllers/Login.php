@@ -8,7 +8,7 @@ use Core\Session;
 defined('ROOTPATH') or exit('Access Denied');
 
 /**
- * Room class
+ * Login controller
  */
 class Login
 {
@@ -31,7 +31,7 @@ class Login
                 {
                     $session = new Session;
                     $session->auth($row);
-                    redirect('book');
+                    redirect('home');
                 }
             }
 
