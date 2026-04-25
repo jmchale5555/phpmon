@@ -22,7 +22,7 @@ class App
         $filename = "../app/controllers/" . ucfirst($URL[0]) . ".php";
         if (file_exists($filename))
         {
-            require $filename;
+            require_once $filename;
             $this->controller = ucfirst($URL[0]);
             unset($URL[0]);
         }
@@ -30,7 +30,7 @@ class App
         {
 
             $filename = "../app/controllers/_404.php";
-            require $filename;
+            require_once $filename;
             $this->controller = '_404';
         }
 
@@ -40,13 +40,24 @@ class App
         // ** select method based on second url parameter
         if (!empty($URL[1]))
         {
-            if (method_exists($controller, $URL[1]))
+            $requestedMethod = $URL[1];
+            $isMethodAllowed = strncmp($requestedMethod, '_', 1) !== 0
+                && strncmp($requestedMethod, '__', 2) !== 0
+                && is_callable([$controller, $requestedMethod]);
+
+            if ($isMethodAllowed)
             {
-                $this->method = $URL[1];
+                $this->method = $requestedMethod;
                 unset($URL[1]);
+            }
+            else
+            {
+                require_once "../app/controllers/_404.php";
+                $controller = new \Controller\_404;
+                $this->method = 'index';
             }
         }
 
-        call_user_func_array([$controller, $this->method], $URL);
+        call_user_func_array([$controller, $this->method], array_values($URL));
     }
 }

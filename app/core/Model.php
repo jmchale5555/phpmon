@@ -95,8 +95,6 @@ trait Model
         $query = trim($query, " && ");
         $query .= " limit $this->limit offset $this->offset";
         $data = array_merge($data, $data_not);
-        $this->query($query, $data);
-
         $result = $this->query($query, $data);
         if ($result)
             return $result[0];
@@ -121,8 +119,6 @@ trait Model
         $query = trim($query, " && ");
         $query .= " limit $this->limit offset $this->offset";
         $data = array_merge($dataLess, $dataGreater);
-        $this->query($query, $data);
-
         $result = $this->query($query, $data);
         if ($result)
             return $result;
