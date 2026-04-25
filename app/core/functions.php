@@ -59,7 +59,7 @@ function dd($stuff)
 
 function esc($str = "")
 {
-    return htmlspecialchars($str);
+    return htmlspecialchars((string)$str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
 function redirect($path)
