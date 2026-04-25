@@ -1,4 +1,4 @@
-# PHP MVC with HTMX and AlpineJS (no build system required)
+# PHP MVC + HTMX + AlpineJS (no build system required)
 
 ## Docker commands
 
