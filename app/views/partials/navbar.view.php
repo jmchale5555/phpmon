@@ -10,7 +10,7 @@
                     hx-select="#page-content > *"
                     hx-select-oob="#site-nav"
                     hx-swap="innerHTML"
-                    hx-push-url="true">Sbox1</a>
+                    hx-push-url="true"><?= APP_NAME ?></a>
             </strong>
         </li>
     </ul>
