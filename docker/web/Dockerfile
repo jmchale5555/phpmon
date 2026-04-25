@@ -1,5 +1,7 @@
 FROM php:8.3-apache
 
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libcurl4-openssl-dev \
@@ -31,5 +33,7 @@ RUN apt-get update \
 
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 COPY . /var/www/html
+
+RUN composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader
 
 WORKDIR /var/www/html

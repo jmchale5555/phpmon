@@ -3,5 +3,6 @@
 cgi-bin
 
 html
+vendor/
 .env
 .env.*

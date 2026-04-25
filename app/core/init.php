@@ -1,7 +1,5 @@
 <?php
 
-use Controller;
-
 spl_autoload_register(function ($classname)
 {
     $classname = explode("\\", $classname);

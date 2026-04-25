@@ -1,4 +1,4 @@
-.PHONY: help up up-build down up-dev up-dev-build down-dev prune-all
+.PHONY: help up up-build down up-dev up-dev-build down-dev composer-install composer-update prune-all
 
 COMPOSE_BASE = docker compose
 COMPOSE_DEV = docker compose -f docker-compose.yml -f docker-compose.dev.yml
@@ -11,6 +11,8 @@ help:
 	@printf "  make up-dev        - compose up with dev override (attached)\n"
 	@printf "  make up-dev-build  - compose up --build with dev override (attached)\n"
 	@printf "  make down-dev      - compose down with dev override\n"
+	@printf "  make composer-install - run composer install in dev container\n"
+	@printf "  make composer-update  - run composer update in dev container\n"
 	@printf "  make prune-all     - docker system prune -a --volumes (destructive)\n"
 
 up:
@@ -30,6 +32,12 @@ up-dev-build:
 
 down-dev:
 	$(COMPOSE_DEV) down
+
+composer-install:
+	$(COMPOSE_DEV) run --rm --no-deps --user "$$(id -u):$$(id -g)" web composer install
+
+composer-update:
+	$(COMPOSE_DEV) run --rm --no-deps --user "$$(id -u):$$(id -g)" web composer update
 
 prune-all:
 	docker system prune -a --volumes
