@@ -17,7 +17,7 @@
 
 ## Current Wiring You Will Trip Over
 - Entrypoint: `public/index.php`.
-- Routing: Apache rewrite in `public/.htaccess` maps non-file/non-dir URLs to `index.php?url=...`.
+- Routing: Apache vhost rewrite maps non-file/non-dir URLs to `index.php?url=...`.
 - Controller resolution is convention-based in `app/core/App.php`:
   - `/foo/bar` -> `app/controllers/Foo.php` -> `\Controller\Foo::bar()`.
 - View rendering uses direct PHP includes via `MainController::view()` in `app/core/Controller.php`.
@@ -27,7 +27,7 @@
 
 ## Infra and Data Constraints
 - First implementation milestone is Docker Compose with Apache + modern PHP + MariaDB.
-- Apache must serve from `public/` and keep rewrite behavior from `public/.htaccess`.
+- Apache must serve from `public/` and keep rewrite behavior in vhost config.
 - Do not anchor new work to legacy `support.sql`; keep only useful schema ideas.
 - Build project-native PHP migrations and seeders (versioned, runnable, repeatable) as source of truth for DB setup.
 
