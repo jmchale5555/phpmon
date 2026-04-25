@@ -1,5 +1,4 @@
-# basic-php-mvc
-# basic-php-mvc
+# PHP MVC with HTMX and AlpineJS (no build required)
 
 ## Docker commands
 
