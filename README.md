@@ -1,5 +1,13 @@
 # PHP MVC + HTMX + AlpineJS (no build system)
 
+## Introduction
+
+This repo is intended as a starting point for projects that need a clean PHP MVC monolith without framework bloat.
+
+- Keeps only the simple MVC/OOP foundation from the legacy codebase.
+- Prioritizes readability and low abstraction over framework-like patterns or excessive indirection.
+- Prefers server-side rendering with small interactive enhancements, not an SPA architecture.
+
 ## Docker commands
 
 Run these from the project root:
@@ -39,3 +47,17 @@ Run these from the project root:
 - Run `make db-status` to check whether migration/seeder tables and users table are present.
 - Run `make db-reset` to rebuild the dev database from scratch.
 - Initial seeder creates `admin@example.com` with password `password` (change after first login in real projects).
+
+## Running without Docker
+
+- Use the Apache vhost config in `docker/apache/000-default.conf` as the reference setup, or an equivalent config for other web servers.
+- Important web-server behavior:
+  - Serve from `public/` as the document root.
+  - Rewrite non-file/non-directory routes to `index.php?url=...`.
+  - Keep static assets under `public/assets/...` directly web-accessible.
+- Ensure PHP extensions required by this app are installed (`gd`, `mysqli`, `pdo_mysql`, `pdo_sqlite`, `curl`, `fileinfo`, `intl`, `exif`, `mbstring`).
+- Copy `.env.example` to `.env` and set your `APP_*` and `DB_*` values for your local server/database.
+- Install dependencies with Composer from project root: `composer install`.
+- Initialize database schema/data with `php scripts/migrate.php` then `php scripts/seed.php`.
+
+If using docker, all of the above is taken care of by the docker compose setup included in the repo.
