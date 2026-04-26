@@ -26,10 +26,21 @@
             gap: 0.45rem;
             margin-bottom: 0;
             padding: 0.4rem 0.65rem;
+            border: 1px solid var(--pico-primary-border);
+            background: var(--pico-primary-background);
+            color: var(--pico-primary-inverse);
+        }
+
+        .nav-menu-button:hover,
+        .nav-menu-button:focus-visible {
+            border-color: var(--pico-primary-hover-border, var(--pico-primary-border));
+            background: var(--pico-primary-hover-background, var(--pico-primary-background));
+            color: var(--pico-primary-inverse);
         }
 
         .nav-menu-icon {
             display: block;
+            filter: brightness(0) invert(1);
         }
 
         .nav-menu-panel {
@@ -96,7 +107,7 @@
             filter: brightness(0) saturate(100%) invert(95%) sepia(17%) saturate(221%) hue-rotate(327deg) brightness(103%) contrast(97%);
         }
 
-        .auth-panel form > button[type="submit"] {
+        .auth-panel form>button[type="submit"] {
             margin-top: 0.9rem;
         }
     </style>
