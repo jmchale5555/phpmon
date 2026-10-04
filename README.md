@@ -13,8 +13,8 @@ and without a frontend build pipeline.
 
 ## Requirements
 
-- PHP 8.1+ with `pdo_mysql`, `gd`, and `fileinfo` (Docker image provides these). Composer's
-  `platform.php` is pinned to 8.1.0 so dependencies resolve for that floor.
+- PHP 8.1+ with `pdo_mysql` (the only extension the framework requires). Composer's `platform.php`
+  is pinned to 8.1.0 so dependencies resolve for that floor.
 - MySQL or MariaDB (Docker Compose provides MariaDB 11.4).
 - Apache with `mod_rewrite` (or an equivalent rewrite-capable web server).
 - Composer (optional; only needed if you add packages).

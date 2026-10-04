@@ -28,7 +28,7 @@ else
     $ok[] = 'PHP ' . PHP_VERSION;
 }
 
-foreach (['pdo_mysql', 'gd', 'fileinfo'] as $extension)
+foreach (['pdo_mysql'] as $extension)
 {
     if (!extension_loaded($extension))
     {
@@ -37,7 +37,7 @@ foreach (['pdo_mysql', 'gd', 'fileinfo'] as $extension)
 }
 if (!$errors)
 {
-    $ok[] = 'required extensions present (pdo_mysql, gd, fileinfo)';
+    $ok[] = 'required extensions present (pdo_mysql)';
 }
 
 if (!function_exists('putenv'))

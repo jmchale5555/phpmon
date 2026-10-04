@@ -13,7 +13,7 @@ RUN apt-get update \
     && docker-php-ext-install -j"$(nproc)" gd pdo_mysql \
     && if ! getent group 1000 >/dev/null; then groupadd --gid 1000 hostdev; fi \
     && if ! getent passwd 1000 >/dev/null; then useradd --uid 1000 --gid 1000 --no-create-home --shell /usr/sbin/nologin hostdev; fi \
-    && a2enmod rewrite \
+    && a2enmod rewrite expires \
     && printf "ServerName localhost\n" > /etc/apache2/conf-available/servername.conf \
     && a2enconf servername \
     && sed -ri 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=${APACHE_RUN_USER:-www-data}/' /etc/apache2/envvars \

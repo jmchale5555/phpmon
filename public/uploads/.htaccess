@@ -1,4 +1,6 @@
-# Uploaded files must never execute. Deny any script-like extension.
+# Never list or execute uploaded files.
+Options -Indexes
+
 <FilesMatch "\.(?i:php|phtml|phar|php[0-9])$">
     Require all denied
 </FilesMatch>

@@ -80,7 +80,9 @@ package:
 		--exclude='.git' \
 		--exclude='.gitignore' \
 		--exclude='.dockerignore' \
+		--exclude='.editorconfig' \
 		--exclude='.env' \
+		--exclude='.github' \
 		--exclude='.vscode' \
 		--exclude='AGENTS.md' \
 		--exclude='docker' \

@@ -31,14 +31,10 @@ Guiding principle throughout: **readability and low abstraction beat framework-l
 .
 ├── public/                     # Web document root (only this is web-exposed)
 │   ├── index.php               # Single entry point / front controller
+│   ├── .htaccess               # rewrites + static asset caching/compression
 │   ├── robots.txt
-│   ├── assets/
-│   │   ├── css/pico-2-1-1.min.css
-│   │   ├── js/alpine-3-15-11.min.js
-│   │   ├── js/htmx-2-0-10.min.js
-│   │   ├── icons/lucide/*.svg  # local icon set
-│   │   └── images/             # default avatar + sample images (prune, see §9)
-│   └── resources/pages/book.html  # LEGACY build artifact (see §9)
+│   ├── assets/                 # local Pico / Alpine / HTMX / icons / images
+│   └── uploads/                # uploaded state (guards + gitignore; preserve)
 ├── app/
 │   ├── core/                   # Framework internals
 │   │   ├── App.php             # Router / dispatcher
@@ -47,30 +43,25 @@ Guiding principle throughout: **readability and low abstraction beat framework-l
 │   │   ├── Database.php        # `Database` trait: PDO connect + query helpers
 │   │   ├── Session.php         # `Core\Session`
 │   │   ├── Request.php         # `Core\Request`
-│   │   ├── Image.php           # `Core\Image` (GD resize)
-│   │   ├── Pager.php           # `Core\Pager` (legacy Bootstrap markup — see §9)
-│   │   ├── functions.php       # global helpers (esc, redirect, old_value, ...)
-│   │   ├── config.php          # env-driven constants (DB_*, APP_*, ROOT)
+│   │   ├── functions.php       # helpers (esc, redirect, csrf_*, error handling)
+│   │   ├── config.php          # env/.env-driven constants (DB_*, APP_*, ROOT)
 │   │   └── init.php            # autoloader + core requires
-│   ├── controllers/            # Controller\* classes (Home, Login, Signup, ...)
-│   ├── models/                 # Model\* classes (User)
-│   └── views/                  # Plain PHP templates + partials/ header, navbar, footer
+│   ├── controllers/            # Controller\* classes (Home, _404); add as needed
+│   ├── models/                 # Model\* classes; add as needed
+│   └── views/                  # Plain PHP templates + partials/
 ├── database/
-│   ├── migrations/             # Timestamped PHP files returning ['up' => fn(PDO)]
-│   └── seeders/                # Timestamped PHP files returning ['run' => fn(PDO)]
-├── scripts/                    # CLI: db.php, migrate.php, seed.php, db-status.php
-├── docker/
-│   ├── web/Dockerfile
-│   └── apache/000-default.conf # vhost + rewrite (dev reference only)
-├── docker-compose.yml          # base: web + mariadb
-├── docker-compose.dev.yml      # override: bind mount + UID/GID mapping
-├── Makefile                    # developer entrypoints
+│   ├── migrations/             # Timestamped PHP migrations (dev-only authoring)
+│   ├── seeders/                # Timestamped PHP seeders (dev-only)
+│   └── updates/                # rare hand-written production delta .sql files
+├── scripts/                    # CLI: db.php, migrate, seed, db-status, preflight
+├── docker/                     # dev web Dockerfile + vhost (AllowOverride All)
+├── docker-compose.yml
+├── docker-compose.dev.yml
+├── Makefile
 ├── composer.json               # optional; starts with no dependencies
-├── vendor/                     # optional + gitignored; `composer install` when you add packages
 ├── README.md
 ├── AGENTS.md
-├── Porject_plan.md             # note: filename typo
-└── docs/ARCHITECTURE.md        # this file
+└── docs/                       # ARCHITECTURE.md, DEPLOYMENT.md, PROJECT_PLAN.md
 ```
 
 ---
@@ -141,13 +132,15 @@ public/index.php
 | `App` | class (global ns) | URL split + dispatch | No HTTP verb awareness, no route params beyond positional args |
 | `MainController` | trait (`Controller\`) | `view($name, $data)` | `extract($data)`; falls back to `404.view.php` |
 | `Model` | trait (`Model\`) | CRUD helpers | `all/where/first/between/insert/update/delete`; see §10 |
-| `Database` | trait (`Model\`) | PDO connect + `query`/`get_row` | New connection per call; returns `false` for empty result |
-| `Core\Session` | class | session data + `auth`/`is_logged_in`/`user` | Stores whole user object in session |
-| `Core\Request` | class | wrapper for `$_POST`/`$_GET`/`$_FILES`/`$_REQUEST` | No validation/injection protection |
-| `Core\Image` | class | GD resize by mime type | webp support depends on GD build flags |
-| `Core\Pager` | class | pagination links | Emits Bootstrap classes, inconsistent with Pico |
-| `functions.php` | global fns | `esc`, `redirect`, `old_value/old_select/old_checked`, `message`, `URL`, `get_image`, `get_date`, `add_root_to_images`, `remove_images_from_content`, `delete_images_from_content`, `check_extensions` | Ext editor helpers are legacy-heavy |
-| `config.php` | constants | `DB_*`, `APP_*`, `ROOT`, `DEBUG_MODE` | Env-only; no `.env` loader, no file fallback |
+| `Database` | trait (`Model\`) | PDO connect + `query`/`execute`/`get_row` | Cached connection; `query` returns `false` for empty result |
+| `Core\Session` | class | session data + `auth`/`is_logged_in`/`user` | Cookie hardened (httponly, samesite, secure); `regenerate()` for post-login |
+| `Core\Request` | class | wrapper for `$_POST`/`$_GET`/`$_FILES`/`$_REQUEST` | No validation layer (validate in models/controllers) |
+| `functions.php` | global fns | `esc`, `redirect`, `get_image`, `message`, `URL`, `old_*`, `csrf_*`, `check_extensions`, `register_error_handling` | Debug helpers `show`/`dd` are DEBUG_MODE-only |
+| `config.php` | constants | `DB_*`, `APP_*`, `ROOT`, `DEBUG_MODE` | Precedence: env → project-root `.env` → defaults |
+
+> Removed during the generalization pass: `Core\Image`, `Core\Pager`, and the legacy HTML/image
+> editor helpers (`add_root_to_images`, `remove_images_from_content`, `delete_images_from_content`)
+> plus `get_pagination_vars`/`get_date`. They were unused and outside the low-abstraction brief.
 
 ---
 
@@ -568,3 +561,24 @@ codifies a **code-vs-state** deployment model. Details are in `docs/DEPLOYMENT.m
 - **Content model direction:** stable JSON/key-value (`pages`, `settings`, `media`) so adding an
   editable field is a row, not a schema change (documented in `docs/DEPLOYMENT.md`).
 - `PROJECT_PLAN.md` and this document supersede the original auth-focused plan.
+- `public/.htaccess` also sets conservative static-asset caching and gzip (both `<IfModule>`
+  guarded); `public/uploads/.htaccess` disables indexing and script execution.
+
+---
+
+## 16. Hardening & Cleanup Pass (applied)
+
+- **Model safety** (`app/core/Model.php`): query keys are validated as bare SQL identifiers;
+  `limit`/`offset` are cast to int; `order_type` is whitelisted and `order_column` validated; empty
+  condition sets no longer produce invalid SQL. `insert`/`update` require `$allowedColumns` and
+  intersect against it (no mass assignment).
+- **CSRF** (`functions.php`): `csrf_token()`, `csrf_field()`, `csrf_verify()` (session token, accepts
+  form field `_token` or `X-CSRF-Token` header).
+- **Session hardening** (`Core\Session`): `httponly` + `samesite=Lax` + `secure` (when HTTPS) cookie
+  params, `session.use_strict_mode=1`, and `regenerate()` for post-login.
+- **Error handling**: `register_error_handling()` logs uncaught exceptions/fatals and shows a
+  generic message in production; detailed only when `DEBUG_MODE`. `show()`/`dd()` are DEBUG_MODE-only.
+- **Extension gate** reduced to `pdo_mysql`.
+- **Removed dead code**: `Core\Image`, `Core\Pager`, and the unused legacy helpers listed in §4.
+- **Hygiene**: generalized `robots.txt`; asset-directory guards return 403; `.editorconfig`; a GitHub
+  Actions workflow lints on PHP 8.1/8.3 and runs preflight.

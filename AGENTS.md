@@ -45,5 +45,5 @@
 
 ## Existing Config Gotcha
 - `app/core/config.php` reads `APP_*` / `DB_*` from env, then `.env`, then defaults.
-- Only `pdo_mysql`, `gd`, and `fileinfo` are treated as required PHP extensions.
+- Only `pdo_mysql` is treated as a required PHP extension; add `gd`/`fileinfo` only when a site needs image handling.
 - Composer is optional and `composer.json` starts empty. Keep the `vendor/autoload.php` include in `public/index.php` guarded with `is_file()` so the app boots without `vendor/`.

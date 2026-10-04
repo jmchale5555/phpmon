@@ -20,10 +20,30 @@ class Session
 	{
 		if (session_status() === PHP_SESSION_NONE)
 		{
+			$secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+				|| (($_SERVER['SERVER_PORT'] ?? null) == 443)
+				|| (defined('ROOT') && str_starts_with(ROOT, 'https://'));
+
+			session_set_cookie_params([
+				'httponly' => true,
+				'samesite' => 'Lax',
+				'secure'   => $secure,
+			]);
+
+			ini_set('session.use_strict_mode', '1');
+
 			session_start();
 		}
 
 		return 1;
+	}
+
+	/** call after a login to prevent session fixation **/
+	public function regenerate(): void
+	{
+		$this->start_session();
+
+		session_regenerate_id(true);
 	}
 
 	/** put data into the session t ocarry it across page loads **/

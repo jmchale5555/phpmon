@@ -34,7 +34,7 @@ example via GitHub's "Use this template"). Site-specific changes do **not** get 
 
 | Stays in `phpmon` (framework) | Belongs to each site repo |
 | --- | --- |
-| `app/core/*`, `App`, `Model`, `Database`, `Session`, `Request`, `Image`, helpers | content controllers, views, and theme CSS |
+| `app/core/*`, `App`, `Model`, `Database`, `Session`, `Request`, helpers | content controllers, views, and theme CSS |
 | generic `Home` / `_404` controllers and shared partials | the site's content model and `database/` migrations/schema |
 | vendored Pico / Alpine / HTMX / icons, `.htaccess`, docker setup | site images and branding |
 | `scripts/`, `docs/`, `Makefile`, `.env.example` | the site's `.env` and `public/uploads/` |
@@ -244,7 +244,8 @@ failures.
 
 - **PHP version.** Dev runs 8.3; `composer.json` pins the platform to **8.1** (the floor, and the
   minimum for Carbon 3). Avoid syntax newer than your host offers.
-- **Extensions.** Only `pdo_mysql`, `gd`, and `fileinfo` are required.
+- **Extensions.** Only `pdo_mysql` is required. Add `gd`/`fileinfo` only if a site introduces image
+  handling.
 - **`putenv`.** If the host disables it, the `.env` loader cannot work; set `APP_*`/`DB_*` via
   `SetEnv` in `.htaccess` or real environment variables instead.
 - **Mail.** Shared-host `mail()` is unreliable; use SMTP for contact forms.

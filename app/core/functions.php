@@ -1,6 +1,5 @@
 <?php
 
-use Core\Image;
 use Core\Session;
 
 defined('ROOTPATH') or exit('Access Denied');
@@ -9,19 +8,14 @@ defined('ROOTPATH') or exit('Access Denied');
 check_extensions();
 function check_extensions()
 {
-
     $required_extensions = [
-
         'pdo_mysql',
-        'gd',
-        'fileinfo',
     ];
 
     $not_loaded = [];
 
     foreach ($required_extensions as $ext)
     {
-
         if (!extension_loaded($ext))
         {
             $not_loaded[] = $ext;
@@ -30,20 +24,33 @@ function check_extensions()
 
     if (!empty($not_loaded))
     {
-        show("Please install and enable the following PHP extension(s): <br>" . implode("<br>", $not_loaded));
-        die;
+        error_log('Missing required PHP extension(s): ' . implode(', ', $not_loaded));
+        http_response_code(500);
+        die('Missing required PHP extension(s): ' . implode(', ', $not_loaded));
     }
 }
 
+/** debug dump, only active in DEBUG_MODE **/
 function show($stuff)
 {
+    if (!DEBUG_MODE)
+    {
+        return;
+    }
+
     echo "<pre>";
     print_r($stuff);
     echo "</pre>";
 }
 
+/** debug dump and die, only active in DEBUG_MODE **/
 function dd($stuff)
 {
+    if (!DEBUG_MODE)
+    {
+        return;
+    }
+
     echo "<pre>";
     var_dump($stuff);
     echo "</pre>";
@@ -70,7 +77,6 @@ function redirect($path)
 /** load image. if not exist, load placeholder **/
 function get_image(mixed $file = '', string $type = 'post'): string
 {
-
     $file = ltrim((string)($file ?? ''), '/');
     if ($file !== '' && file_exists(ROOTPATH . $file))
     {
@@ -87,31 +93,18 @@ function get_image(mixed $file = '', string $type = 'post'): string
     }
 }
 
-/** returns pagination links **/
-function get_pagination_vars(): array
-{
-    $vars = [];
-    $vars['page']         = $_GET['page'] ?? 1;
-    $vars['page']         = (int)$vars['page'];
-    $vars['prev_page']     = $vars['page'] <= 1 ? 1 : $vars['page'] - 1;
-    $vars['next_page']     = $vars['page'] + 1;
-
-    return $vars;
-}
-
 /** Adds message to session to be displayed after redirect etc **/
 function message(string $msg = null, bool $clear = false)
 {
-    $ses     = new Session();
+    $ses = new Session();
 
     if (!empty($msg))
     {
         $ses->set('message', $msg);
     }
     else
-	if (!empty($ses->get('message')))
+    if (!empty($ses->get('message')))
     {
-
         $msg = $ses->get('message');
 
         if ($clear)
@@ -124,7 +117,7 @@ function message(string $msg = null, bool $clear = false)
     return false;
 }
 
-/** grab part of the URL, you know the first second or third section (0,1,2,3) **/
+/** grab part of the URL (0,1,2,3 or page/section/action/id) **/
 function URL($key): mixed
 {
     $URL = $_GET['url'] ?? 'home';
@@ -135,33 +128,24 @@ function URL($key): mixed
         case 'page':
         case 0:
             return $URL[0] ?? null;
-            break;
         case 'section':
         case 'slug':
         case 1:
             return $URL[1] ?? null;
-            break;
         case 'action':
         case 2:
             return $URL[2] ?? null;
-            break;
         case 'id':
         case 3:
             return $URL[3] ?? null;
-            break;
         default:
             return null;
-            break;
     }
-
-    return $URL;
 }
-
 
 /** displays input values after a page refresh **/
 function old_checked(string $key, string $value, string $default = ""): string
 {
-
     if (isset($_POST[$key]))
     {
         if ($_POST[$key] == $value)
@@ -171,7 +155,6 @@ function old_checked(string $key, string $value, string $default = ""): string
     }
     else
     {
-
         if ($_SERVER['REQUEST_METHOD'] == "GET" && $default == $value)
         {
             return ' checked ';
@@ -180,7 +163,6 @@ function old_checked(string $key, string $value, string $default = ""): string
 
     return '';
 }
-
 
 function old_value(string $key, mixed $default = "", string $mode = 'post'): mixed
 {
@@ -204,8 +186,7 @@ function old_select(string $key, mixed $value, mixed $default = "", string $mode
         }
     }
     else
-
-  if ($default == $value)
+    if ($default == $value)
     {
         return " selected ";
     }
@@ -213,172 +194,83 @@ function old_select(string $key, mixed $value, mixed $default = "", string $mode
     return "";
 }
 
-
-/** returns a human readable date format **/
-function get_date($date)
+/** returns the current CSRF token, creating one if needed **/
+function csrf_token(): string
 {
-    return date("jS M, Y", strtotime($date));
+    $ses = new Session();
+    $token = $ses->get('csrf_token');
+
+    if (empty($token))
+    {
+        $token = bin2hex(random_bytes(32));
+        $ses->set('csrf_token', $token);
+    }
+
+    return $token;
 }
 
-
-
-/** converts image paths from relative to absolute **/
-function add_root_to_images($contents)
+/** hidden input to drop into a form **/
+function csrf_field(): string
 {
-
-    preg_match_all('/<img[^>]+>/', $contents, $matches);
-    if (is_array($matches) && count($matches) > 0)
-    {
-
-        foreach ($matches[0] as $match)
-        {
-
-            preg_match('/src="[^"]+/', $match, $matches2);
-            if (!strstr($matches2[0], 'http'))
-            {
-
-                $contents = str_replace($matches2[0], 'src="' . ROOT . '/' . str_replace('src="', "", $matches2[0]), $contents);
-            }
-        }
-    }
-
-    return $contents;
+    return '<input type="hidden" name="_token" value="' . esc(csrf_token()) . '">';
 }
 
-/** converts images from text editor content to actual files **/
-function remove_images_from_content($content, $folder = "uploads/")
+/** verify a submitted token (form field or X-CSRF-Token header) **/
+function csrf_verify(?string $token = null): bool
 {
+    $ses = new Session();
+    $expected = $ses->get('csrf_token');
 
-    if (!file_exists($folder))
-    {
-        mkdir($folder, 0744, true);
-        file_put_contents($folder . "index.php", "Access Denied!");
-    }
+    $token = $token ?? ($_POST['_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
 
-    //remove images from content
-    preg_match_all('/<img[^>]+>/', $content, $matches);
-    $new_content = $content;
-
-    if (is_array($matches) && count($matches) > 0)
-    {
-
-        $image_class = new Image();
-        foreach ($matches[0] as $match)
-        {
-
-            if (strstr($match, "http"))
-            {
-                //ignore images with links already
-                continue;
-            }
-
-            // get the src
-            preg_match('/src="[^"]+/', $match, $matches2);
-
-            // get the filename
-            preg_match('/data-filename="[^\"]+/', $match, $matches3);
-
-            if (strstr($matches2[0], 'data:'))
-            {
-
-                $parts = explode(",", $matches2[0]);
-                $basename = $matches3[0] ?? 'basename.jpg';
-                $basename = str_replace('data-filename="', "", $basename);
-
-                $filename = $folder . "img_" . sha1(rand(0, 9999999999)) . $basename;
-
-                $new_content = str_replace($parts[0] . "," . $parts[1], 'src="' . $filename, $new_content);
-                file_put_contents($filename, base64_decode($parts[1]));
-
-                //resize image
-                $image_class->resize($filename, 1000);
-            }
-        }
-    }
-
-    return $new_content;
+    return !empty($expected) && is_string($token) && hash_equals($expected, $token);
 }
 
-/** deletes images from text editor content after making an edit to a page **/
-function delete_images_from_content(string $content, string $content_new = ''): void
+/** generic error handling: detailed in dev, quiet + logged in production **/
+function register_error_handling(): void
 {
+    error_reporting(E_ALL & ~E_DEPRECATED);
 
-    //delete images from content
-    if (empty($content_new))
+    set_exception_handler(function (\Throwable $e): void
     {
+        error_log(sprintf(
+            '[uncaught] %s: %s in %s:%d',
+            get_class($e),
+            $e->getMessage(),
+            $e->getFile(),
+            $e->getLine()
+        ));
 
-        preg_match_all('/<img[^>]+>/', $content, $matches);
-
-        if (is_array($matches) && count($matches) > 0)
+        if (!headers_sent())
         {
-            foreach ($matches[0] as $match)
-            {
-
-                preg_match('/src="[^"]+/', $match, $matches2);
-                $matches2[0] = str_replace('src="', "", $matches2[0]);
-
-                if (file_exists($matches2[0]))
-                {
-                    unlink($matches2[0]);
-                }
-            }
+            http_response_code(500);
         }
-    }
-    else
+
+        echo DEBUG_MODE
+            ? '<pre>' . esc((string)$e) . '</pre>'
+            : '<!doctype html><title>Error</title><p>An error occurred.</p>';
+    });
+
+    register_shutdown_function(function (): void
     {
-
-        //compare old to new and delete from old what inst in the new
-        preg_match_all('/<img[^>]+>/', $content, $matches);
-        preg_match_all('/<img[^>]+>/', $content_new, $matches_new);
-
-        $old_images = [];
-        $new_images = [];
-
-        /** collect old images **/
-        if (is_array($matches) && count($matches) > 0)
+        if (DEBUG_MODE)
         {
-            foreach ($matches[0] as $match)
-            {
-
-                preg_match('/src="[^"]+/', $match, $matches2);
-                $matches2[0] = str_replace('src="', "", $matches2[0]);
-
-                if (file_exists($matches2[0]))
-                {
-                    $old_images[] = $matches2[0];
-                }
-            }
+            return;
         }
 
-        /** collect new images **/
-        if (is_array($matches_new) && count($matches_new) > 0)
+        $error = error_get_last();
+        if (!$error || !in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true))
         {
-            foreach ($matches_new[0] as $match)
-            {
-
-                preg_match('/src="[^"]+/', $match, $matches2);
-                $matches2[0] = str_replace('src="', "", $matches2[0]);
-
-                if (file_exists($matches2[0]))
-                {
-                    $new_images[] = $matches2[0];
-                }
-            }
+            return;
         }
 
+        error_log(sprintf('[fatal] %s in %s:%d', $error['message'], $error['file'], $error['line']));
 
-        /** compare and delete all that dont appear in the new array **/
-        foreach ($old_images as $img)
+        if (!headers_sent())
         {
-
-            if (!in_array($img, $new_images))
-            {
-
-                if (file_exists($img))
-                {
-                    unlink($img);
-                }
-            }
+            http_response_code(500);
         }
-    }
+
+        echo '<!doctype html><title>Error</title><p>An error occurred.</p>';
+    });
 }

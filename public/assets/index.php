@@ -1,3 +1,4 @@
 <?php
 
-defined('ROOTPATH') or exit('Access Denied');
+http_response_code(403);
+exit;
