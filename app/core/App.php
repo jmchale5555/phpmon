@@ -9,9 +9,12 @@ class App
     private function splitURL()
     {
         $URL = $_GET['url'] ?? 'home';
-        $URL = explode("/", trim($URL, '/'));
+        $URL = array_values(array_filter(explode('/', trim($URL, '/')), function ($segment)
+        {
+            return $segment !== '';
+        }));
 
-        return $URL;
+        return $URL ?: ['home'];
     }
 
     public function loadController()
@@ -19,7 +22,7 @@ class App
         $URL = $this->splitURL();
 
         // ** select controller based on first url parameter
-        $filename = "../app/controllers/" . ucfirst($URL[0]) . ".php";
+        $filename = APPROOT . "app/controllers/" . ucfirst($URL[0]) . ".php";
         if (file_exists($filename))
         {
             require_once $filename;
@@ -28,13 +31,11 @@ class App
         }
         else
         {
-
-            $filename = "../app/controllers/_404.php";
+            $filename = APPROOT . "app/controllers/_404.php";
             require_once $filename;
             $this->controller = '_404';
         }
 
-        // $mycontroller = '\Controller\\' . $this->controller;
         $controller = new ('\Controller\\' . $this->controller);
 
         // ** select method based on second url parameter
@@ -42,7 +43,6 @@ class App
         {
             $requestedMethod = $URL[1];
             $isMethodAllowed = strncmp($requestedMethod, '_', 1) !== 0
-                && strncmp($requestedMethod, '__', 2) !== 0
                 && is_callable([$controller, $requestedMethod]);
 
             if ($isMethodAllowed)
@@ -52,7 +52,7 @@ class App
             }
             else
             {
-                require_once "../app/controllers/_404.php";
+                require_once APPROOT . "app/controllers/_404.php";
                 $controller = new \Controller\_404;
                 $this->method = 'index';
             }

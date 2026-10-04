@@ -4,24 +4,13 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libcurl4-openssl-dev \
         libfreetype6-dev \
-        libicu-dev \
         libjpeg62-turbo-dev \
-        libonig-dev \
         libpng-dev \
-        libsqlite3-dev \
-        libzip-dev \
+        libwebp-dev \
         unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" \
-        exif \
-        gd \
-        intl \
-        mbstring \
-        mysqli \
-        pdo_mysql \
-        pdo_sqlite \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j"$(nproc)" gd pdo_mysql \
     && if ! getent group 1000 >/dev/null; then groupadd --gid 1000 hostdev; fi \
     && if ! getent passwd 1000 >/dev/null; then useradd --uid 1000 --gid 1000 --no-create-home --shell /usr/sbin/nologin hostdev; fi \
     && a2enmod rewrite \
@@ -34,6 +23,8 @@ RUN apt-get update \
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 COPY . /var/www/html
 
+# Optional: installs packages declared in composer.json. With no dependencies this
+# still generates vendor/autoload.php, which public/index.php includes if present.
 RUN composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader
 
 WORKDIR /var/www/html

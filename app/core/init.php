@@ -3,9 +3,9 @@
 spl_autoload_register(function ($classname)
 {
     $prefixMap = [
-        'Model\\' => __DIR__ . '/../models/',
+        'Model\\'      => __DIR__ . '/../models/',
         'Controller\\' => __DIR__ . '/../controllers/',
-        'Core\\' => __DIR__ . '/',
+        'Core\\'       => __DIR__ . '/',
     ];
 
     foreach ($prefixMap as $prefix => $baseDir)
@@ -23,15 +23,6 @@ spl_autoload_register(function ($classname)
 
             return;
         }
-    }
-
-    $fallbackClass = explode('\\', $classname);
-    $fallbackClass = end($fallbackClass);
-    $fallbackFile = __DIR__ . '/../models/' . ucfirst($fallbackClass) . '.php';
-
-    if (file_exists($fallbackFile))
-    {
-        require_once $fallbackFile;
     }
 });
 

@@ -16,20 +16,34 @@
 - Layout target stays simple: title, navbar, main section, footer.
 
 ## Current Wiring You Will Trip Over
-- Entrypoint: `public/index.php`.
-- Routing: Apache vhost rewrite maps non-file/non-dir URLs to `index.php?url=...`.
+- Entrypoint: `public/index.php` (defines `ROOTPATH` = public root and `APPROOT` = project root).
+- Routing: `public/.htaccess` rewrites non-file/non-dir URLs to `index.php?url=...`. The Docker vhost uses `AllowOverride All` so the same file is the single source of rewrite rules.
 - Controller resolution is convention-based in `app/core/App.php`:
   - `/foo/bar` -> `app/controllers/Foo.php` -> `\Controller\Foo::bar()`.
 - View rendering uses direct PHP includes via `MainController::view()` in `app/core/Controller.php`.
+- Autoloading is a small `spl_autoload_register` in `app/core/init.php`. Composer is optional: `public/index.php` includes `vendor/autoload.php` only if it exists.
+- Configuration precedence: real env vars -> project-root `.env` -> defaults in `app/core/config.php`.
+- The boilerplate is intentionally blank: `Home` is a neutral landing page and there is no auth feature.
+  Add controllers/models/views/migrations as needed.
 - Shared layout partials already include local static assets:
   - `app/views/partials/header.view.php` includes `assets/css/pico-2-1-1.min.css`
   - `app/views/partials/footer.view.php` includes `assets/js/alpine-3-15-11.min.js` and `assets/js/htmx-2-0-10.min.js`
 
 ## Infra and Data Constraints
-- First implementation milestone is Docker Compose with Apache + modern PHP + MariaDB.
-- Apache must serve from `public/` and keep rewrite behavior in vhost config.
-- Do not anchor new work to legacy `support.sql`; keep only useful schema ideas.
-- Build project-native PHP migrations and seeders (versioned, runnable, repeatable) as source of truth for DB setup.
+- Docker Compose provides Apache + modern PHP + MariaDB for dev.
+- Apache must serve from `public/`; rewrite behavior lives in `public/.htaccess`.
+- PHP floor is 8.1 (pinned in `composer.json` `config.platform`); keep code 8.1-compatible.
+- PHP migrations + seeders are the **dev-only** source of truth for schema. Production receives SQL
+  (`make schema-dump` -> import `database/schema.sql`; rare deltas live in `database/updates/`).
+  Never make production depend on the migrator.
+
+## Deployment Model (see docs/DEPLOYMENT.md)
+- Deploy code, never state. State = database, `public/uploads/`, and `.env`; preserve all three.
+- `make package` builds a code-only release zip in `dist/` (excludes state and dev files).
+- `make preflight` / `php scripts/preflight.php` checks the target environment.
+- `phpmon` is the canonical framework; each business site is a separate repo derived from it.
 
 ## Existing Config Gotcha
-- `app/core/config.php` uses environment-driven values (`APP_*`, `DB_*`) with local defaults.
+- `app/core/config.php` reads `APP_*` / `DB_*` from env, then `.env`, then defaults.
+- Only `pdo_mysql`, `gd`, and `fileinfo` are treated as required PHP extensions.
+- Composer is optional and `composer.json` starts empty. Keep the `vendor/autoload.php` include in `public/index.php` guarded with `is_file()` so the app boots without `vendor/`.

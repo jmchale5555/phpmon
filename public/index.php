@@ -1,25 +1,28 @@
 <?php
 
-require '../vendor/autoload.php';
-
 session_start();
 
 /**  Valid PHP Version? **/
-$minPHPVersion = '8.0';
+$minPHPVersion = '8.1';
 if (phpversion() < $minPHPVersion)
 {
     die("Your PHP version must be {$minPHPVersion} or higher to run this app. Your current version is " . phpversion());
 }
 
-
-
-
-/** Path to this file **/
+/** Absolute paths. ROOTPATH is the public web root; APPROOT is the project root. **/
 define('ROOTPATH', __DIR__ . DIRECTORY_SEPARATOR);
+define('APPROOT', dirname(ROOTPATH) . DIRECTORY_SEPARATOR);
 
-require "../app/core/init.php";
+/** Optional Composer autoloader. Only needed if you add packages (e.g. nesbot/carbon). **/
+$composerAutoload = APPROOT . 'vendor/autoload.php';
+if (is_file($composerAutoload))
+{
+    require $composerAutoload;
+}
 
-DEBUG_MODE ? ini_set('display_errors', 1) : ini_set('display_errors', 0);
+require APPROOT . 'app/core/init.php';
+
+DEBUG_MODE ? ini_set('display_errors', '1') : ini_set('display_errors', '0');
 
 $app = new App;
 $app->loadController();

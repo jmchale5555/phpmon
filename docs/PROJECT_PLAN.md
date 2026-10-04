@@ -1,5 +1,9 @@
 # Project Refactor Plan
 
+> Historical note: this plan targeted a template/auth-focused scope that has since been
+> generalized. The auth feature and demo content have been removed from the boilerplate; see
+> `docs/ARCHITECTURE.md` §14 for the current applied state.
+
 ## Status Snapshot
 - Overall completion: ~100%
 - Last updated: 2026-04-26

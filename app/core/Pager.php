@@ -17,9 +17,9 @@ class Pager
 	public $end 			= 1;
 	public $limit 			= 10;
 	public $nav_class 		= "";
-	public $ul_class 		= "pagination justify-content-center";
-	public $li_class 		= "page-item";
-	public $a_class 		= "page-link";
+	public $ul_class 		= "";
+	public $li_class 		= "";
+	public $a_class 		= "";
 
 	public function __construct($limit = 10, $extras = 1)
 	{
@@ -64,24 +64,21 @@ class Pager
 		if ($record_count == $this->limit || $this->page_number > 1)
 		{
 ?>
-			<br class="clearfix">
-			<div>
-				<nav class="<?= $this->nav_class ?>">
-					<ul class="<?= $this->ul_class ?>">
-						<li class="<?= $this->li_class ?>"><a class="<?= $this->a_class ?>" href="<?= $this->links['first'] ?>">First</a></li>
+			<nav class="<?= $this->nav_class ?>" aria-label="Pagination">
+				<ul class="<?= $this->ul_class ?>">
+					<li class="<?= $this->li_class ?>"><a class="<?= $this->a_class ?>" href="<?= $this->links['first'] ?>">First</a></li>
 
-						<?php for ($x = $this->start; $x <= $this->end; $x++): ?>
-							<li class="<?= $this->li_class ?> 
- 			    	<?= ($x == $this->page_number) ? ' active ' : ''; ?>
- 			    	"><a class="<?= $this->a_class ?>" href="
- 			    		<?= preg_replace('/page=[0-9]+/', "page=" . $x, $this->links['current']) ?>
- 			    		"><?= $x ?></a></li>
-						<?php endfor; ?>
+					<?php for ($x = $this->start; $x <= $this->end; $x++): ?>
+						<li class="<?= $this->li_class ?>">
+							<a class="<?= $this->a_class ?>"
+								<?= ($x == $this->page_number) ? 'aria-current="page"' : ''; ?>
+								href="<?= preg_replace('/page=[0-9]+/', "page=" . $x, $this->links['current']) ?>"><?= $x ?></a>
+						</li>
+					<?php endfor; ?>
 
-						<li class="<?= $this->li_class ?>"><a class="<?= $this->a_class ?>" href="<?= $this->links['next'] ?>">Next</a></li>
-					</ul>
-				</nav>
-			</div>
+					<li class="<?= $this->li_class ?>"><a class="<?= $this->a_class ?>" href="<?= $this->links['next'] ?>">Next</a></li>
+				</ul>
+			</nav>
 <?php
 		}
 	}

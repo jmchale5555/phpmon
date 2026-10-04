@@ -1,8 +1,11 @@
-
-
-cgi-bin
-
-html
-vendor/
 .env
 .env.*
+!.env.example
+
+/vendor/
+/var/
+/dist/
+/database/schema.sql
+*.log
+*.swp
+.DS_Store

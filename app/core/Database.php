@@ -6,23 +6,29 @@ use PDO;
 
 trait Database
 {
-    private function connect()
+    /** Shared connection for the request. */
+    private static ?PDO $connection = null;
+
+    private function connect(): PDO
     {
-        $string = "mysql:host=" . DBHOST . ";port=" . DBPORT . ";dbname=" . DBNAME . ";charset=utf8mb4";
-        $con = new PDO($string, DBUSER, DBPASS, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-        ]);
-        return $con;
+        if (self::$connection === null)
+        {
+            $string = "mysql:host=" . DBHOST . ";port=" . DBPORT . ";dbname=" . DBNAME . ";charset=utf8mb4";
+            self::$connection = new PDO($string, DBUSER, DBPASS, [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+            ]);
+        }
+
+        return self::$connection;
     }
 
+    /** Run a statement and return the affected/returned rows, or false when empty. */
     public function query($query, $data = [])
     {
-        $con = $this->connect();
-        $stm = $con->prepare($query);
+        $stm = $this->connect()->prepare($query);
 
-        $check = $stm->execute($data);
-        if ($check)
+        if ($stm->execute($data))
         {
             $result = $stm->fetchAll();
             if (is_array($result) && count($result))
@@ -34,13 +40,23 @@ trait Database
         return false;
     }
 
+    /** Run a write statement (insert/update/delete) and report success. */
+    public function execute($query, $data = []): bool
+    {
+        return $this->connect()->prepare($query)->execute($data);
+    }
+
+    /** Last auto-increment id produced by this connection. */
+    public function last_insert_id(): string
+    {
+        return $this->connect()->lastInsertId();
+    }
+
     public function get_row($query, $data = [])
     {
-        $con = $this->connect();
-        $stm = $con->prepare($query);
+        $stm = $this->connect()->prepare($query);
 
-        $check = $stm->execute($data);
-        if ($check)
+        if ($stm->execute($data))
         {
             $result = $stm->fetchAll();
             if (is_array($result) && count($result))
@@ -52,5 +68,3 @@ trait Database
         return false;
     }
 }
-
-// show($con);

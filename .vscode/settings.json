@@ -1,7 +1,7 @@
 {
-    "php.validate.executablePath": "/usr/bin",
-    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
-    "editor.formatOnSave": true,
-    "editor.defaultFoldingRangeProvider": "bmewburn.vscode-intelephense-client",
+    "[php]": {
+        "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+        "editor.formatOnSave": true
+    },
     "intelephense.format.braces": "allman"
 }

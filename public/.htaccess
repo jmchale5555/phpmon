@@ -1,0 +1,22 @@
+# Front controller rewrites for no-build shared hosting.
+#
+# This file is required when Apache serves public/ directly. It mirrors the
+# rewrite rules in docker/apache/000-default.conf so local and production
+# routing behave identically.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Allow ACME HTTP-01 challenges (certificate issuance/renewal).
+    RewriteRule ^\.well-known/ - [L]
+
+    # Deny direct access to other dotfiles (e.g. .env placed alongside, if any).
+    RewriteRule (^|/)\. - [F]
+
+    # Send every request that is not a real file or directory to index.php.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?url=$1 [L,QSA]
+</IfModule>
+
+DirectoryIndex index.php

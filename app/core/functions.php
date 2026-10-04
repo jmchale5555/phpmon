@@ -12,15 +12,9 @@ function check_extensions()
 
     $required_extensions = [
 
-        'gd',
-        'mysqli',
         'pdo_mysql',
-        'pdo_sqlite',
-        'curl',
+        'gd',
         'fileinfo',
-        'intl',
-        'exif',
-        'mbstring',
     ];
 
     $not_loaded = [];
@@ -36,7 +30,7 @@ function check_extensions()
 
     if (!empty($not_loaded))
     {
-        show("Please ensure that the following PHP extensions are installed and loaded: <br>" . implode("<br>", $not_loaded));
+        show("Please install and enable the following PHP extension(s): <br>" . implode("<br>", $not_loaded));
         die;
     }
 }
@@ -64,7 +58,12 @@ function esc($str = "")
 
 function redirect($path)
 {
-    header("Location: " . ROOT . "/" . $path);
+    if (!preg_match('#^https?://#i', $path))
+    {
+        $path = ROOT . "/" . ltrim($path, "/");
+    }
+
+    header("Location: " . $path);
     die;
 }
 
@@ -72,8 +71,8 @@ function redirect($path)
 function get_image(mixed $file = '', string $type = 'post'): string
 {
 
-    $file = $file ?? '';
-    if (file_exists($file))
+    $file = ltrim((string)($file ?? ''), '/');
+    if ($file !== '' && file_exists(ROOTPATH . $file))
     {
         return ROOT . "/" . $file;
     }

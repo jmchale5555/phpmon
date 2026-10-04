@@ -18,29 +18,21 @@ function table_exists(PDO $pdo, string $tableName): bool
 
 $pdo = db_connect();
 
-$migrationTableExists = table_exists($pdo, 'schema_migrations');
-$seedTableExists = table_exists($pdo, 'schema_seeds');
-$usersTableExists = table_exists($pdo, 'users');
-
 echo "database status\n";
-echo 'schema_migrations table: ' . ($migrationTableExists ? 'present' : 'missing') . "\n";
-echo 'schema_seeds table: ' . ($seedTableExists ? 'present' : 'missing') . "\n";
-echo 'users table: ' . ($usersTableExists ? 'present' : 'missing') . "\n";
 
-if ($migrationTableExists)
+foreach (['schema_migrations' => 'migrations', 'schema_seeds' => 'seeders'] as $table => $label)
 {
-    $migrationCount = (int)$pdo->query('SELECT COUNT(*) FROM schema_migrations')->fetchColumn();
-    echo "applied migrations: {$migrationCount}\n";
+    echo "{$table} table: " . (table_exists($pdo, $table) ? 'present' : 'missing') . "\n";
 }
 
-if ($seedTableExists)
+if (table_exists($pdo, 'schema_migrations'))
 {
-    $seedCount = (int)$pdo->query('SELECT COUNT(*) FROM schema_seeds')->fetchColumn();
-    echo "applied seeders: {$seedCount}\n";
+    $count = (int)$pdo->query('SELECT COUNT(*) FROM schema_migrations')->fetchColumn();
+    echo "applied migrations: {$count}\n";
 }
 
-if ($usersTableExists)
+if (table_exists($pdo, 'schema_seeds'))
 {
-    $userCount = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
-    echo "users count: {$userCount}\n";
+    $count = (int)$pdo->query('SELECT COUNT(*) FROM schema_seeds')->fetchColumn();
+    echo "applied seeders: {$count}\n";
 }
