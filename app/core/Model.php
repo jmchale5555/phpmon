@@ -52,6 +52,13 @@ trait Model
         return $this->query($query);
     }
 
+    public function count(): int
+    {
+        $result = $this->query("select count(*) as total from $this->table");
+
+        return $result ? (int) $result[0]->total : 0;
+    }
+
     public function where(array $where_array = [], array $where_not_array = [], array $greater_than_array = []): array|bool
     {
         $clauses = [];

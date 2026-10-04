@@ -121,6 +121,46 @@ docs/            ARCHITECTURE.md, DEPLOYMENT.md, PROJECT_PLAN.md
 4. Add `app/views/things.view.php` and render it with `$this->view('things', $data)`.
 5. Link to `/things`.
 
+## Optional CMS module (auth + stable-JSON content)
+
+The repo ships a small, removable CMS module for the brochure-site use case. It adds admin login,
+editable pages, global settings, and image uploads — all on the existing MVC foundation.
+
+- **Auth:** session login/logout, change password, CSRF-protected forms.
+- **Content:** `pages`, `settings`, and `media` tables. Page content is stored as **stable JSON**
+  (key/value blocks), so adding a new editable block never requires a schema change.
+- **Default login** (dev seed): `admin@example.com` / `password` — change it after first login.
+
+Routes:
+
+| URL | Purpose |
+| --- | --- |
+| `/login`, `/logout` | Admin login/logout |
+| `/password` | Change password (requires login) |
+| `/admin` | Dashboard (requires login) |
+| `/admin/pages`, `/admin/editPage[/id]`, `/admin/deletePage/{id}` | Page CRUD |
+| `/admin/settings` | Edit global settings |
+| `/admin/media`, `/admin/deleteMedia/{id}` | Upload/manage images |
+| `/page` and `/page/{slug}` | Public page rendering |
+
+`Page` uses `__call()` so `/page/about` maps to the `about` slug without a dynamic route table.
+
+**Making it optional:** the module is ordinary convention-based code, so removal is deleting its
+files. Core stays untouched except for `Model::count()`, `require_csrf()`, and the generic
+`Core\RequiresLogin` trait. Files to remove if you don't want it:
+
+```
+app/controllers/{Admin,Login,Logout,Page,Password}.php
+app/core/RequiresLogin.php
+app/models/{User,Page,Setting,Media}.php
+app/views/{login,password,page,admin_dashboard,admin_pages,admin_page_edit,admin_settings,admin_media}.view.php
+app/views/partials/admin-nav.view.php
+database/migrations/20261004_*.php
+database/seeders/20261004_*.php
+```
+
+(Removing the migration files does not drop existing tables — drop them manually if needed.)
+
 ## Frontend
 
 - `public/assets/css/pico-2-1-1.min.css` - Pico CSS.

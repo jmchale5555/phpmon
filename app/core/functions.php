@@ -226,6 +226,16 @@ function csrf_verify(?string $token = null): bool
     return !empty($expected) && is_string($token) && hash_equals($expected, $token);
 }
 
+/** stop the request unless a valid CSRF token was submitted **/
+function require_csrf(): void
+{
+    if (!csrf_verify())
+    {
+        http_response_code(419);
+        die('Invalid or missing CSRF token.');
+    }
+}
+
 /** generic error handling: detailed in dev, quiet + logged in production **/
 function register_error_handling(): void
 {

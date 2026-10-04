@@ -184,23 +184,39 @@ This framework targets brochure/CMS sites, not high-scale systems, so the schema
 change as little as possible. Content is stored in a stable shape; new editable text is a new key
 or row, never a new column.
 
-Recommended starting point for a site repo:
+This schema ships as the optional CMS module (`database/migrations/20261004_*`), so a site that uses
+the module gets it via `make migrate`:
 
 ```sql
+CREATE TABLE users (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(190) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NULL DEFAULT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_users_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE pages (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     slug VARCHAR(190) NOT NULL,
     title VARCHAR(190) NOT NULL,
     content JSON NULL,
-    updated_at DATETIME NULL,
+    is_published TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NULL DEFAULT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_pages_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE settings (
-    `key` VARCHAR(190) NOT NULL,
-    value TEXT NULL,
-    PRIMARY KEY (`key`)
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    setting_key VARCHAR(190) NOT NULL,
+    setting_value TEXT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_settings_key (setting_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE media (
@@ -212,8 +228,9 @@ CREATE TABLE media (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
-Adding "a second phone number in the footer" becomes a `settings` row. No `ALTER TABLE`, no delta,
-no deploy ceremony.
+Page bodies are a JSON object of key/value blocks edited in the admin UI. Adding "a second phone
+number in the footer" becomes a `settings` row or a new page block — no `ALTER TABLE`, no delta, no
+deploy ceremony.
 
 ---
 

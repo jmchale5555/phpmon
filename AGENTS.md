@@ -23,8 +23,10 @@
 - View rendering uses direct PHP includes via `MainController::view()` in `app/core/Controller.php`.
 - Autoloading is a small `spl_autoload_register` in `app/core/init.php`. Composer is optional: `public/index.php` includes `vendor/autoload.php` only if it exists.
 - Configuration precedence: real env vars -> project-root `.env` -> defaults in `app/core/config.php`.
-- The boilerplate is intentionally blank: `Home` is a neutral landing page and there is no auth feature.
-  Add controllers/models/views/migrations as needed.
+- `Home` is a neutral landing page. An optional CMS module ships in the normal folders:
+  - auth: `Controller\Login/Logout/Password`, `Model\User`, `Core\RequiresLogin`
+  - content: `Controller\Admin/Page`, `Model\Page/Setting/Media` (stable-JSON page bodies)
+  - see `README.md` "Optional CMS module" for routes and the file list to remove it.
 - Shared layout partials already include local static assets:
   - `app/views/partials/header.view.php` includes `assets/css/pico-2-1-1.min.css`
   - `app/views/partials/footer.view.php` includes `assets/js/alpine-3-15-11.min.js` and `assets/js/htmx-2-0-10.min.js`

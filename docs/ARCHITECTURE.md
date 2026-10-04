@@ -582,3 +582,23 @@ codifies a **code-vs-state** deployment model. Details are in `docs/DEPLOYMENT.m
 - **Removed dead code**: `Core\Image`, `Core\Pager`, and the unused legacy helpers listed in §4.
 - **Hygiene**: generalized `robots.txt`; asset-directory guards return 403; `.editorconfig`; a GitHub
   Actions workflow lints on PHP 8.1/8.3 and runs preflight.
+
+---
+
+## 17. Optional CMS Module (auth + stable-JSON content)
+
+A removable module for the brochure-site use case. It uses only convention-based placement, so it
+needs no framework extension and is removed by deleting its files (list in `README.md`).
+
+- **Auth:** `Login`/`Logout`/`Password` controllers, `Model\User`, session login with
+  `Core\Session::regenerate()` (fixation protection), CSRF on every POST, and the generic
+  `Core\RequiresLogin` guard trait.
+- **Content:** `Model\Page`, `Model\Setting`, `Model\Media` over `pages`/`settings`/`media`
+  migrations. Page bodies are JSON key/value blocks edited with a small Alpine component, so new
+  editable blocks never change the schema.
+- **Admin:** `Controller\Admin` covers dashboard, page CRUD, settings, and media upload with
+  `getimagesize()` validation (no `gd`/`fileinfo` requirement). Images go to `public/uploads/`,
+  which already denies script execution.
+- **Public:** `Controller\Page` renders published pages; `__call()` turns the URL segment into the
+  slug (`/page/about`), avoiding a dynamic route table.
+- **Core additions:** `Model::count()`, `require_csrf()`, and `Core\RequiresLogin`.
